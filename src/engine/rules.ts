@@ -1,10 +1,12 @@
 import type { Evidence, Finding, Page } from './types'
-import { BUDGET, evidenceFrom, findAll, monthIndex, pagesUnderHeader, quoteAround, toEvidence, windowAt } from './text'
+import { BUDGET, COST_HEADER, empPages, evidenceFrom, findAll, isReferencePage, monthIndex, quoteAround, toEvidence, windowAt } from './text'
 
 type Rule = (pages: Page[]) => Finding
 
-const MODELS = /\b(AERMOD|AERMET|MIKE ?21|CALPUFF|HEC-RAS|QUAL2K|Delft3D|CORMIX|SWAN|CALINE)\b/gi
-const AIR_MODEL = /\b(AERMOD|AERMET|CALPUFF|ADMS)\b/i
+// Predictive models seen in EIAs worldwide: air, noise, hydrodynamics, water quality, groundwater, coastal, traffic, wind.
+// Case-sensitive on purpose: "GENESIS", "MOVES" and "SWAN" are models; "genesis", "moves" and "swan" are words.
+const MODELS = /\b(AERMOD|AERMET|AERSCREEN|SCREEN3|ISCST3|CALPUFF|CALINE\d?|CAL3QHCR?|ADMS(?:-Roads|-Urban)?|CMAQ|WRF-Chem|Sound ?PLAN|SoundPlan|Cadna ?A|IMMI|Predictor-LimA|ISO\s?9613|CRTN|TNM|MIKE\s?(?:21|3|11|SHE|FM)|Mike\s?21|Delft ?3D|TELEMAC|Telemac|ROMS|FVCOM|EFDC|SWAN|XBeach|GENESIS|LITPACK|CORMIX|Visual Plumes|QUAL2[EK]|WASP\d?|HEC-RAS|HEC-HMS|SWMM|SWAT|MODFLOW|FEFLOW|PHABSIM|WAsP|WindPRO|WindPro|openwind|MOVES\d*|COPERT|VISSIM|PVsyst)\b/g
+const AIR_MODEL = /\b(AERMOD|AERMET|AERSCREEN|SCREEN3|ISCST3|CALPUFF|CALINE\d?|CAL3QHCR?|ADMS|CMAQ)\b/i
 
 function base(ruleId: string, title: string, section: Finding['section'], severity: Finding['severity'], fix: string) {
   return { ruleId, title, section, severity, fix }
@@ -62,7 +64,7 @@ const r2: Rule = (pages) => {
 const r3: Rule = (pages) => {
   const b = base('R3', 'Model calibration / validation reported', 'B', 'High',
     'Calibrate each model against site measurements (e.g. plume model vs field TSS, AERMOD vs monitored baseline) and report the error statistics.')
-  const hits = findAll(pages, MODELS)
+  const hits = findAll(pages.filter((p) => !isReferencePage(p)), MODELS)
   if (!hits.length) return na(b, 'No named predictive model found.')
   const byModel = new Map<string, typeof hits>()
   for (const h of hits) {
@@ -88,7 +90,7 @@ const r3: Rule = (pages) => {
 const r4: Rule = (pages) => {
   const b = base('R4', 'Sensitivity / uncertainty analysis', 'B', 'Medium',
     'Add a sensitivity run for the key inputs (emission rate, met year, sediment loss rate) and state a range, not a single number.')
-  const models = findAll(pages, MODELS)
+  const models = findAll(pages.filter((p) => !isReferencePage(p)), MODELS)
   if (!models.length) return na(b, 'No predictive model found.')
   const hits = findAll(pages, /sensitivity analys[ie]s|uncertaint(y|ies)|confidence interval/i)
   if (hits.length) return { ...b, status: 'pass', evidence: evidenceFrom(hits, 2), explanation: 'The report discusses sensitivity or uncertainty.' }
@@ -111,17 +113,18 @@ const r5: Rule = (pages) => {
 
 interface Exceedance { code: string; value: number; limit: number; ratio: number; page: Page; at: number }
 
-const NOT_STATION = /^(NO|SO|CO|PM|O)\d+$/i
+const NOT_STATION = /^(NO|SO|CO|PM|O|CH|NH|H)[-_ ]?\d+$/i
 
 /** Parse "CODE n n n" rows on a page against a "... standard|limit n n n" row. */
 export function parseLimitTable(page: Page): { rows: Exceedance[]; columns: number[][] } {
-  const lim = /(?:standard|limit)\s+((?:<?\d+(?:\.\d+)?\*{0,2}(?:\s+|$)){1,6})/i.exec(page.text)
-  if (!lim) return { rows: [], columns: [] }
+  const lim = /(?:standards?|limits?|guidelines?|guideline values?|threshold|permissible(?: level)?|NAAQS|criteria)\s+((?:<?\d+(?:\.\d+)?\*{0,2}(?:\s+|$)){1,6})/i.exec(page.text)
+  // Only measurement tables: risk matrices and scoring tables also sit next to "Guidelines" but carry no units.
+  if (!lim || !/mg\/|µg|ug\/|dB|NTU|ppm|ppb|°C|concentration|monitor(?:ing|ed)|baseline|sampl/i.test(page.text)) return { rows: [], columns: [] }
   const limits = lim[1].trim().split(/\s+/).map((s) => (s.startsWith('<') ? NaN : parseFloat(s)))
   const n = limits.length
   const rows: Exceedance[] = []
   const columns: number[][] = limits.map(() => [])
-  const rowRe = new RegExp(String.raw`\b([A-Z]{2,3}\d{1,2})\s+((?:<?\d+(?:\.\d+)?(?:\s+|$)){${n}})`, 'g')
+  const rowRe = new RegExp(String.raw`\b([A-Z]{1,4}[-_ ]?\d{1,2})\s+((?:<?\d+(?:\.\d+)?(?:\s+|$)){${n}})`, 'g')
   for (const m of page.text.matchAll(rowRe)) {
     if (NOT_STATION.test(m[1]) || (m.index ?? 0) > lim.index) continue
     m[2].trim().split(/\s+/).forEach((s, j) => {
@@ -211,7 +214,8 @@ const r9: Rule = (pages) => {
   const b = base('R9', 'No placeholder or draft text', 'A', 'Medium',
     'Complete the missing assessment (or state that it was not done and why) before the report is accepted as final.')
   // A bare "xx" is usually a roman page number in front matter, so only count it where a number belongs.
-  const hits = findAll(pages, /to provide their assessment|before any finali[sz]ation|\bTBD\b|\bTBC\b|to be confirmed|\[insert|\b(Table|Figure|Fig\.|Section|Annex|Appendix|Chapter|page)\s+x{2,}\b|\bx{2,}\s?(%|km|m\b|mg)|lorem ipsum/i)
+  // Includes Word's broken-cross-reference text, which survives into many final PDFs.
+  const hits = findAll(pages, /to provide their assessment|before any finali[sz]ation|\bTBD\b|\bTBC\b|to be confirmed\b|\[insert|\[to be|\[add |\[placeholder|insert (?:figure|table|map) here|Error! (?:Reference source not found|Bookmark not defined)|\b(Table|Figure|Fig\.|Section|Annex|Appendix|Chapter|page)\s+x{2,}\b|\bx{2,}\s?(%|km|m\b|mg)|lorem ipsum|\?\?\?/i)
   if (!hits.length) return { ...b, status: 'pass', evidence: [], explanation: 'No placeholder text found.' }
   return { ...b, status: 'flag', evidence: evidenceFrom(hits, 3),
     explanation: `${hits.length} placeholder${hits.length > 1 ? 's' : ''} left in the final report: part of the assessment was never done.` }
@@ -223,27 +227,28 @@ const HEDGE = /\bshould\b|as much as possible|if possible|wherever possible|\bex
 const r10: Rule = (pages) => {
   const b = base('R10', 'EMP commitments are SMART', 'C', 'High',
     'Rewrite each EMP item as "who does what, by when, measured how, at what cost" and give the EMP a line-item budget.')
-  let emp = pagesUnderHeader(pages, /^(ENVIRONMENT\w*\s+(AND|&)\s+SOCIAL\s+)?MANAGEMENT PLAN/i)
-  if (!emp.length) emp = pages.filter((p) => /\b(ESMP|EMP)\b/.test(p.text))
+  const emp = empPages(pages)
   if (!emp.length) return na(b, 'No environmental management plan chapter found.')
 
   const hedges = findAll(emp, HEDGE, 60)
   const noTraining = findAll(emp, /Training:\s*None/i, 60)
-  const budgets = findAll(emp, /\bbudget\b|estimated cost|cost estimate|cost \((LKR|USD|Rs)/i)
+  const budgets = findAll(emp, /\bbudget\b|estimated cost|cost estimate|\bcosts?\s*\(|cost of (?:the )?(?:E?S?MM?P|mitigation|monitoring)/i)
   const costed = budgets.filter((h) => {
     const page = emp.find((p) => p.index === h.pdfPage)!
     const near = windowAt(page.text, h.index, 400)
     // A money figure nearby, or a cost table whose header carries the currency ("Estimated Cost (LKR) in Million").
-    return BUDGET.test(near) || /cost\s*\((LKR|USD|Rs\.?|SLR)\)[^.]{0,200}\d/i.test(near)
+    return BUDGET.test(near) || COST_HEADER.test(near)
   })
   const noFigure = !costed.length
   const uncosted = budgets.filter((h) => !costed.includes(h)).sort((a, b) => +/allocate/i.test(b.quote) - +/allocate/i.test(a.quote))
   const issues: string[] = []
   if (noFigure) issues.push(budgets.length ? 'the budget section gives no figure' : 'there is no budget section')
-  if (hedges.length > 10) issues.push(`"should"-type hedges appear ${hedges.length} times`)
+  // Scaled to EMP length so a long, thorough EMP is not penalised for its size alone.
+  const hedgy = hedges.length > 10 && hedges.length / emp.length >= 0.5
+  if (hedgy) issues.push(`"should"-type hedges appear ${hedges.length} times`)
   if (noTraining.length) issues.push(`${noTraining.length} items say "Training: None"`)
 
-  if (!noFigure && hedges.length <= 10)
+  if (!noFigure && !hedgy)
     return { ...b, status: 'pass', evidence: evidenceFrom(costed, 1), explanation: 'The EMP is costed and mostly uses firm commitments.' }
   return { ...b, status: 'flag', evidence: [...evidenceFrom(uncosted, 1), ...evidenceFrom(noTraining, 1), ...evidenceFrom(hedges, 1)],
     explanation: `The EMP cannot be enforced as written: ${issues.join('; ')}.` }

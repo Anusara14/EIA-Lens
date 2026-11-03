@@ -69,13 +69,39 @@ export interface EmpItem {
   label: string | null
 }
 
+export interface GeoPoint {
+  lat: number
+  lng: number
+  pdfPage: number
+  label: string | null
+  quote: string
+}
+
+/** Where the report says the project is, found from its own text. */
+export interface Location {
+  source: 'coordinates' | 'place' | 'none'
+  points: GeoPoint[]
+  place: { name: string; lat: number; lng: number; evidence: Evidence; country: string | null; uncertaintyKm: number } | null
+  radius: { km: number; evidence: Evidence } | null
+  center: [number, number] | null // [lng, lat]
+  bbox: [number, number, number, number] | null // west, south, east, north
+}
+
 export interface MonitoringSeries {
   name: string
   unit: string
   limit: number
   values: { code: string; value: number }[]
+  quote: string // text of the first row, for highlighting
   pdfPage: number
   label: string | null
+}
+
+/** How much of the PDF the rules could actually read. */
+export interface Coverage {
+  textPages: number // pages with a usable text layer
+  scannedShare: number // 0..1 of pages with (almost) no text: scans that need OCR
+  english: boolean // the rules and keyword lists are English
 }
 
 export interface Analysis {
@@ -90,5 +116,7 @@ export interface Analysis {
   labels: Record<string, number> // printed label → PDF page
   emp: EmpItem[]
   monitoring: MonitoringSeries | null
+  location: Location
+  coverage: Coverage
   analysedAt: number
 }

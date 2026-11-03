@@ -1,16 +1,16 @@
 import type { AreaGrade, Auditability, Decision, Finding, Grade, Page, Prediction, Rating } from './types'
-import { evidenceFrom, findAll, isTocPage, pagesUnderHeader } from './text'
+import { evidenceFrom, findAll, impactPages, isTocPage } from './text'
 
 // ---------- Auditability (Wood et al. 2000; Buckley 1991) ----------
 
 const PREDICTIVE = /\b(will|would|is expected|are expected|predicted|likely|unlikely|impacts?)\b/i
-const NUM_UNIT = /\d[\d,.]*\s?(mg\/l|mg\/L|µg\/m3|µg\/m³|ug\/m3|dB\s?\(?A\)?|dBA|km|m3|m³|m\b|%|tCO2|tCO₂|NTU|ha\b|kg\/s|tonnes?)/i
-const PLACE_TIME = /\b(at|within|from the|km|receptor|station|boundary|shore|site|AQ\d|WS\d|during|year|month|day|hours?|construction|operation|20\d\d)\b/i
+const NUM_UNIT = /\d[\d,.]*\s?(mg\/l|µg\/l|ug\/l|mg\/m3|mg\/m³|µg\/m3|µg\/m³|ug\/m3|mg\/kg|ppm|ppb|dB\s?\(?[AC]?\)?|dBA|mm\/s|m\/s|km2|km²|km|ha\b|acres?|m3\/s|m³\/s|l\/s|m3|m³|m2|m²|m\b|%|°C|tCO2e?|tCO₂e?|[kM]t\b|tonnes?|t\/yr|kg\/s|kg\/day|NTU|MW|GWh|kWh|vehicles?\/(?:hr|hour|day))/i
+const PLACE_TIME = /\b(at|within|from the|km|receptor|station|boundary|shore|site|[A-Z]{1,3}-?\d{1,2}|during|year|month|day|hours?|night|construction|operation|20\d\d)\b/i
 const VAGUE = /\b(minimal|negligible|insignificant|unlikely|remote|low|minor|limited|not significant)\b/i
 
 export function scoreAuditability(pages: Page[]): Auditability {
   // Prefer the impact chapter; fall back to the whole report.
-  let scope = pagesUnderHeader(pages, /^IMPACT ASSESSMENT/i)
+  let scope = impactPages(pages)
   if (scope.length < 3) scope = pages.filter((p) => !isTocPage(p))
   const preds: Prediction[] = []
   for (const p of scope) {

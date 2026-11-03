@@ -15,7 +15,7 @@ export function PrintReport() {
   return (
     <article className="hidden bg-white text-[10.5pt] leading-snug text-black print:block">
       <header className="mb-5 border-b border-black pb-3">
-        <p className="text-[9pt] tracking-wide">EIA-Lens review summary · {date}</p>
+        <p className="text-[9pt] tracking-wide">EIA Lens review summary · {date}</p>
         <h1 className="text-[20pt] font-light">{docName}</h1>
       </header>
 
@@ -70,7 +70,7 @@ export function PrintReport() {
       )}
 
       <footer className="border-t border-black pt-2 text-[8.5pt]">
-        EIA-Lens prototype · findings are decision support; the planner decides. Satellite turbidity is indicative unless calibrated. Page references use the printed ESIA page labels.
+        EIA Lens prototype · findings are decision support; the planner decides. Satellite turbidity is indicative unless calibrated. Page references use the printed ESIA page labels.
         <br />
         Developed by {DEVELOPER.name} · {DEVELOPER.url.replace('https://', '')}
       </footer>

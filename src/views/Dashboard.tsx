@@ -1,7 +1,7 @@
 import { useRef } from 'react'
 import gsap from 'gsap'
 import { useGSAP } from '@gsap/react'
-import { Check, ClipboardCheck, FileText, Gauge, Scale, Target, X } from 'lucide-react'
+import { Check, ClipboardCheck, FileText, Gauge, Scale, Target, TriangleAlert, X } from 'lucide-react'
 import type { AreaGrade, Finding, Grade } from '../engine'
 import { useStore } from '../store'
 import seed from '../demo/wct1.json'
@@ -135,8 +135,20 @@ export function Dashboard() {
   const gradeEv = [...grades].filter((g) => g.evidence.length).sort((a, b) => a.grade.localeCompare(b.grade)).at(-1)?.evidence[0]
   const audEv = aud.examples.vague[0]
 
+  const cov = analysis.coverage
+  const warnings = [
+    cov.scannedShare > 0.3 && `${Math.round(cov.scannedShare * 100)}% of pages have no text layer (scanned images). The rules cannot read them, so missing checks may show as "not applicable"; run the PDF through OCR first for a full review.`,
+    !cov.english && 'This report does not appear to be in English. The rules and keyword lists are English-only, so treat every result as unreliable.',
+  ].filter(Boolean) as string[]
+
   return (
     <div ref={root} className="flex flex-col gap-4">
+      {warnings.length > 0 && (
+        <div role="status" className="flex flex-col gap-1.5 rounded-[24px] bg-mint-50 px-5 py-4 text-[14px] leading-relaxed text-on-mint">
+          <span className="flex items-center gap-2 font-medium"><TriangleAlert className="size-4" aria-hidden /> Limited reading</span>
+          {warnings.map((w) => <p key={w}>{w}</p>)}
+        </div>
+      )}
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
         <Card icon={FileText} title="Review quality" aside={<OutlinePill>Indicative · reviewer confirms</OutlinePill>}>
           <RatingPill rating={ratings.review} />
@@ -163,7 +175,7 @@ export function Dashboard() {
             <span data-count={auditPct} className="num text-ink">{auditPct}%</span> of predictions can be tested after construction. The rest are vague or give no magnitude.
           </p>
           <AuditBars auditable={aud.auditable} vague={aud.vague} unstated={aud.unstated} />
-          <EvidencePill ev={audEv ? { quote: audEv.sentence, pdfPage: audEv.pdfPage, label: audEv.label } : undefined} prefix="Vague example, ESIA" />
+          <EvidencePill ev={audEv ? { quote: audEv.sentence, pdfPage: audEv.pdfPage, label: audEv.label } : undefined} prefix="Vague example," />
         </Card>
       </div>
 

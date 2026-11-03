@@ -41,7 +41,7 @@ export function Upload() {
         <span className="grid size-11 place-items-center rounded-2xl bg-mint-500 text-on-mint">
           <Logo className="size-6" />
         </span>
-        <span className="text-[22px] tracking-[-0.01em]">EIA-Lens</span>
+        <span className="text-[22px] tracking-[-0.01em]">EIA Lens</span>
         {analysis && (
           <button type="button" onClick={() => go('dashboard')} className="ml-auto rounded-full border border-line-strong px-4 py-2 text-[14px] text-ink-2 hover:border-mint-500 hover:text-ink">
             Back to last scorecard

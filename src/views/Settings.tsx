@@ -53,9 +53,9 @@ export function Settings() {
         </Card>
       </div>
 
-      <Card icon={BookOpen} title="About EIA-Lens">
+      <Card icon={BookOpen} title="About EIA Lens">
         <p className="max-w-[62ch] text-[14px] leading-relaxed text-ink-2">
-          Existing AI tools for EIA read reports: screening and question answering. EIA-Lens checks the science with ten fixed, reproducible rules, and checks spatial claims against open data. AI only retrieves evidence; a human planner makes the decision.
+          Existing AI tools for EIA read reports: screening and question answering. EIA Lens checks the science with ten fixed, reproducible rules, and checks spatial claims against open data. AI only retrieves evidence; a human planner makes the decision.
         </p>
         <p className="text-[14px] text-ink">
           Developed by <DeveloperLink />

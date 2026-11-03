@@ -135,13 +135,13 @@ export function Review() {
 
   return (
     <div className="grid gap-4 lg:h-[calc(100vh-150px)] lg:grid-cols-[minmax(0,1.2fr)_minmax(360px,1fr)] [&>*]:min-w-0">
-      <section aria-label="ESIA document" className="flex min-h-[70vh] flex-col gap-3 rounded-[var(--radius-card)] bg-card p-4 lg:min-h-0">
+      <section aria-label="Report document" className="flex min-h-[70vh] flex-col gap-3 rounded-[var(--radius-card)] bg-card p-4 lg:min-h-0">
         <header className="flex flex-wrap items-center gap-2 px-2">
           <h2 className="flex items-center gap-2.5 text-[15px]"><FileSearch className="size-[18px] text-ink-2" strokeWidth={1.6} aria-hidden /> Document</h2>
           <div className="ml-auto flex items-center gap-1">
             <button type="button" onClick={() => goPage(page - 1)} disabled={page <= 1} className="grid size-9 place-items-center rounded-full hover:bg-card-2 disabled:opacity-35" aria-label="Previous page"><ChevronLeft className="size-5" /></button>
             <span className="num min-w-[150px] text-center text-[13.5px]">
-              PDF {page} / {numPages}{labelOf(page) && <span className="text-ink-2"> · ESIA p. {labelOf(page)}</span>}
+              PDF {page} / {numPages}{labelOf(page) && <span className="text-ink-2"> · printed p. {labelOf(page)}</span>}
             </span>
             <button type="button" onClick={() => goPage(page + 1)} disabled={page >= numPages} className="grid size-9 place-items-center rounded-full hover:bg-card-2 disabled:opacity-35" aria-label="Next page"><ChevronRight className="size-5" /></button>
           </div>

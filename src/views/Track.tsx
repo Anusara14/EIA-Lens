@@ -33,13 +33,16 @@ function Ledger({ items }: { items: EmpItem[] }) {
   const rows = sortBy === 'smart' ? [...items].sort((a, b) => a.smart - b.smart) : items
   const mean = items.reduce((s, i) => s + i.smart, 0) / (items.length || 1)
   const noTraining = items.filter((i) => i.training === 'None').length
+  const costed = items.filter((i) => i.hasBudget).length
+  const owned = items.filter((i) => i.owner).length
 
   return (
     <Card icon={ListChecks} title="EMP promise ledger" className="xl:col-span-2"
       aside={<span className="num text-[13px] text-ink-2">{items.length} commitments · mean SMART {mean.toFixed(1)}/4</span>}>
       <div className="flex flex-wrap items-center gap-2 text-[13px]">
-        <OutlinePill>No commitment has a budget figure</OutlinePill>
-        <OutlinePill>{noTraining} rows say "Training: None"</OutlinePill>
+        <OutlinePill>{costed ? `${costed} of ${items.length} commitments carry a cost` : 'No commitment has a budget figure'}</OutlinePill>
+        <OutlinePill>{owned} of {items.length} name who is responsible</OutlinePill>
+        {noTraining > 0 && <OutlinePill>{noTraining} rows say "Training: None"</OutlinePill>}
         <button type="button" onClick={() => setSortBy(sortBy === 'order' ? 'smart' : 'order')} className="ml-auto rounded-full border border-line-strong px-3 py-1 text-ink-2 hover:text-ink">
           Sort: {sortBy === 'order' ? 'EMP order' : 'weakest first'}
         </button>
@@ -102,10 +105,10 @@ function TssChart() {
   const mean = data.reduce((s, d) => s + d.value, 0) / data.length
   const band = m.limit * 0.9
   return (
-    <Card icon={Droplets} title={`${m.name} at ${data.length} stations`} aside={<OutlinePill>{m.label ? `ESIA p. ${m.label}` : `PDF p. ${m.pdfPage}`}</OutlinePill>}>
+    <Card icon={Droplets} title={`${m.name} at ${data.length} stations`} aside={<OutlinePill>{m.label ? `p. ${m.label}` : `PDF p. ${m.pdfPage}`}</OutlinePill>}>
       <p className="text-[14px] leading-relaxed text-ink-2">
         Mean <span className="num text-ink">{mean.toFixed(0)} {m.unit}</span> against a limit of <span className="num text-ink">{m.limit} {m.unit}</span>.{' '}
-        <span className="num text-ink">{near} of {data.length}</span> stations already sit within 10% of the limit, before dredging adds anything.
+        <span className="num text-ink">{near} of {data.length}</span> stations already sit within 10% of the limit, before the project adds anything.
       </p>
       <div className="h-[300px]" role="img" aria-label={`${m.name} by station; ${near} of ${data.length} stations within 10% of the ${m.limit} ${m.unit} limit`}>
         <ResponsiveContainer width="100%" height="100%">
@@ -113,7 +116,7 @@ function TssChart() {
             <CartesianGrid vertical={false} stroke="var(--line)" />
             <ReferenceArea y1={band} y2={m.limit} fill="var(--mint-300)" fillOpacity={0.16} ifOverflow="extendDomain" />
             <XAxis dataKey="code" tick={{ fill: 'var(--text-2)', fontSize: 11 }} interval={3} tickLine={false} axisLine={{ stroke: 'var(--line)' }} />
-            <YAxis domain={[100, Math.ceil((m.limit * 1.05) / 10) * 10]} tick={{ fill: 'var(--text-2)', fontSize: 11 }} tickLine={false} axisLine={false} />
+            <YAxis domain={[Math.max(0, Math.floor((Math.min(...data.map((d) => d.value)) * 0.8) / 10) * 10), Math.ceil((Math.max(m.limit, ...data.map((d) => d.value)) * 1.08) / 10) * 10]} tick={{ fill: 'var(--text-2)', fontSize: 11 }} tickLine={false} axisLine={false} />
             <Tooltip cursor={{ fill: 'var(--card-2)' }} contentStyle={{ background: 'var(--card-2)', border: '1px solid var(--line)', borderRadius: 14, color: 'var(--text)' }}
               formatter={(v) => [`${v} ${m.unit}`, m.name]} />
             <Bar dataKey="value" radius={[6, 6, 2, 2]} isAnimationActive={!window.matchMedia('(prefers-reduced-motion: reduce)').matches}>
@@ -128,29 +131,31 @@ function TssChart() {
         <span className="flex items-center gap-2"><span className="size-3 rounded-sm border border-line-strong bg-mint-50" aria-hidden /> Within 10% of limit ({band.toFixed(0)}–{m.limit})</span>
         <span className="flex items-center gap-2"><span className="h-0 w-4 border-t border-dashed border-ink" aria-hidden /> Limit</span>
       </div>
-      <EvidencePill ev={{ quote: `${m.values[0].code} <1 ${m.values[0].value}`, pdfPage: m.pdfPage, label: m.label }} prefix="Table on ESIA" />
+      <EvidencePill ev={{ quote: m.quote, pdfPage: m.pdfPage, label: m.label }} prefix="Table on" />
     </Card>
   )
 }
 
 function StopWork() {
   const m = useStore((s) => s.analysis?.monitoring)
-  const limit = m?.limit ?? 150
-  const mean = m ? Math.round(m.values.reduce((s, v) => s + v.value, 0) / m.values.length) : null
   return (
     <Card icon={OctagonAlert} title="Stop-work trigger" aside={<OutlinePill>Proposal</OutlinePill>}>
-      <dl className="flex flex-col gap-3">
-        <div className="rounded-[20px] bg-mint-50 p-4 text-on-mint">
-          <dt className="text-[13px] font-medium">Halt dredging</dt>
-          <dd className="mt-1 text-[22px] leading-snug font-light tracking-[-0.01em]">TSS &gt; {limit} mg/l at 500 m from the dredger</dd>
-        </div>
-        <div className="rounded-[20px] bg-card-2 p-4">
-          <dt className="text-[13px] font-medium">Alert, tighten controls</dt>
-          <dd className="mt-1 text-[17px] leading-snug">Background + 25 mg/l{mean !== null && <span className="text-ink-2"> (≈ {mean + 25} mg/l on the March 2023 mean)</span>}</dd>
-        </div>
-      </dl>
+      {m ? (
+        <dl className="flex flex-col gap-3">
+          <div className="rounded-[20px] bg-mint-50 p-4 text-on-mint">
+            <dt className="text-[13px] font-medium">Halt the activity</dt>
+            <dd className="mt-1 text-[22px] leading-snug font-light tracking-[-0.01em]">{m.name} &gt; {m.limit} {m.unit} at the compliance point</dd>
+          </div>
+          <div className="rounded-[20px] bg-card-2 p-4">
+            <dt className="text-[13px] font-medium">Alert, tighten controls</dt>
+            <dd className="mt-1 text-[17px] leading-snug">{m.name} reaches {+(m.limit * 0.9).toFixed(1)} {m.unit} (90% of the limit)</dd>
+          </div>
+        </dl>
+      ) : (
+        <p className="text-[14px] leading-relaxed text-ink-2">No monitored parameter with a stated limit was found, so no trigger can be proposed from the report alone.</p>
+      )}
       <p className="text-[13px] leading-relaxed text-ink-2">
-        Not in the ESIA. The EMP names no threshold that stops work, so a breach has no consequence. Proposed here for the planner to set as a consent condition.
+        Check whether the EMP names a threshold that stops work; without one a breach has no consequence. Proposed here for the planner to set as a consent condition, with the compliance point (e.g. 500 m from the works) agreed with the regulator.
       </p>
     </Card>
   )

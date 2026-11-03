@@ -1,9 +1,20 @@
-import type { Analysis, Page } from './types'
+import type { Analysis, Coverage, Page } from './types'
 import { runRules } from './rules'
 import { decide, gradeReview, gradeValue, rate, scoreAuditability } from './score'
 import { extractEmp, monitoringSeries } from './emp'
+import { locate } from './location'
 
 export * from './types'
+
+const STOPWORDS = /\b(the|and|of|to|in|is|be|will|for|with|are|by|on|this|that)\b/gi
+
+export function coverage(pages: Page[]): Coverage {
+  const textPages = pages.filter((p) => p.text.length >= 200).length
+  const sample = pages.map((p) => p.text).join(' ').slice(0, 200_000)
+  const words = (sample.match(/\p{L}+/gu) ?? []).length
+  const stop = (sample.match(STOPWORDS) ?? []).length
+  return { textPages, scannedShare: pages.length ? 1 - textPages / pages.length : 1, english: words < 200 || stop / words > 0.06 }
+}
 
 /** Full deterministic analysis. Same pages in → same result out. */
 export function analyse(pages: Page[]): Analysis {
@@ -34,6 +45,8 @@ export function analyse(pages: Page[]): Analysis {
     labels: Object.fromEntries(pages.filter((p) => p.label).map((p) => [p.label!, p.index]).reverse()),
     emp: extractEmp(pages),
     monitoring: monitoringSeries(pages),
+    location: locate(pages),
+    coverage: coverage(pages),
     analysedAt: Date.now(),
   }
 }

@@ -65,7 +65,12 @@ function TopBar() {
   const rel = useRelativeTime(analysis?.analysedAt)
   return (
     <header className="flex flex-wrap items-center gap-3 rounded-[24px] bg-card-2 px-5 py-4 sm:px-6">
-      <h1 className="mr-1 min-w-0 truncate text-[19px] font-normal tracking-[-0.01em] sm:text-[22px]">{docName ?? 'EIA-Lens'}</h1>
+      <button type="button" onClick={() => go('dashboard')} className="flex shrink-0 items-center gap-2 rounded-full pr-1 text-ink hover:text-link" aria-label="EIA Lens, back to the dashboard">
+        <Logo className="size-8 text-mint-500" />
+        <span className="hidden text-[17px] font-bold tracking-[-0.01em] lg:inline">EIA Lens</span>
+      </button>
+      <span className="hidden h-6 w-px bg-line-strong lg:block" aria-hidden />
+      <h1 className="mr-1 min-w-0 truncate text-[19px] font-normal tracking-[-0.01em] sm:text-[22px]">{docName ?? 'EIA Lens'}</h1>
       {rel && <span className="hidden rounded-full border border-line-strong px-3 py-1 text-[13px] text-ink-2 sm:inline">{rel}</span>}
       <div className="ml-auto flex items-center gap-2">
         <button type="button" onClick={toggleTheme} className="grid size-10 place-items-center rounded-full text-ink-2 hover:bg-card hover:text-ink" aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}>
@@ -85,7 +90,7 @@ function TopBar() {
   )
 }
 
-const FOOTER = 'EIA-Lens prototype · findings are decision support; the planner decides. Satellite turbidity is indicative unless calibrated.'
+const FOOTER = 'EIA Lens prototype · findings are decision support; the planner decides. Satellite turbidity is indicative unless calibrated.'
 
 function Footer({ className = '' }: { className?: string }) {
   return (
@@ -116,7 +121,7 @@ export default function App() {
         <nav aria-label="Main" className="sticky top-4 hidden h-[calc(100vh-2rem)] w-[72px] shrink-0 flex-col items-center gap-2 rounded-[24px] bg-rail py-3 md:flex">
           <div className="mb-3 grid size-12 place-items-center rounded-2xl bg-mint-500 text-on-mint">
             <Logo className="size-7" />
-            <span className="sr-only">EIA-Lens</span>
+            <span className="sr-only">EIA Lens</span>
           </div>
           {NAV.map((n) => <NavButton key={n.view} {...n} />)}
           <div className="mt-auto"><NavButton {...SETTINGS} /></div>

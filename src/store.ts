@@ -47,7 +47,7 @@ interface State {
   rerun: () => Promise<void>
 }
 
-const SAVE_KEY = 'eia-lens:last:v2' // bump when Analysis changes shape
+const SAVE_KEY = 'eia-lens:last:v4' // bump when Analysis changes shape
 const EMP_KEY = 'eia-lens:emp-status'
 const THEME_KEY = 'eia-lens:theme'
 const DEMO_URL = '/demo/WCT1_ESIA_2023.pdf'
