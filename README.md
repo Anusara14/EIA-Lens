@@ -23,7 +23,6 @@
   <img alt="Runs in the browser" src="https://img.shields.io/badge/runs-100%25_in_browser-1FD18A">
   <img alt="No API key needed" src="https://img.shields.io/badge/API_key-not_required-1FD18A">
   <img alt="Works with any EIA or ESIA" src="https://img.shields.io/badge/reports-any_EIA_%2F_ESIA-1FD18A">
-  <img alt="Topic: environmental impact assessment" src="https://img.shields.io/badge/topic-environmental_impact_assessment-0B8A52">
   <img alt="Topic: urban planning" src="https://img.shields.io/badge/topic-urban_planning-0B8A52">
 </p>
 
