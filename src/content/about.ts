@@ -5,9 +5,9 @@
 export const SITE = {
   url: 'https://eialens.vercel.app/',
   name: 'EIA Lens',
-  title: 'EIA Lens: free Environmental Impact Assessment (EIA) review tool',
+  title: 'EIA Lens: Free Environmental Impact Assessment Review',
   description:
-    'Upload any EIA or ESIA PDF and get a scorecard in under a minute. Ten fixed audit rules check the science, every flag links to its page, and it runs in your browser.',
+    'Upload an EIA or ESIA PDF and get a scorecard in under a minute. Ten fixed audit rules check the science; every flag links to its page. Runs in your browser.',
   updated: '2026-11-04',
 }
 
