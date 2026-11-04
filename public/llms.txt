@@ -1,0 +1,37 @@
+# EIA Lens
+
+> EIA Lens is a free, browser-based tool that reviews Environmental Impact Assessments (EIA) and Environmental and Social Impact Assessments (ESIA). Upload a PDF and ten fixed, reproducible rules check the science; every red flag links to the page that proves it. The planner makes the decision. The PDF never leaves the user's device and no API key is needed.
+
+## Pages
+
+- [EIA Lens app](https://eialens.vercel.app/): upload an EIA/ESIA PDF or load the demo (West Container Terminal-1, Colombo Port, Sri Lanka, ESIA by ERM, 2023).
+- [Source code and documentation](https://github.com/Anusara14/EIA-Lens): architecture, rules, limitations and test results.
+
+## What it checks
+
+- R1 Meteorological data covers at least one year
+- R2 Dispersion setting (urban/rural) is justified
+- R3 Model calibration or validation is reported
+- R4 Sensitivity or uncertainty analysis is present
+- R5 Climate change scenarios are considered
+- R6 Baseline leaves at least 10% headroom below the limit
+- R7 Averaging times match the standard
+- R8 Text and tables agree
+- R9 No placeholder or draft text remains
+- R10 EMP commitments are SMART (owner, number, date or frequency, budget)
+
+## Outputs
+
+- Review-quality grades A–F (simplified Lee & Colley), model audit, auditability score, recommended decision (Approve / Approve with conditions / Revise)
+- 3D map of the report's coordinates with optional Sentinel-2 turbidity overlay
+- EMP promise ledger with SMART 0–4 scores; monitoring data against limits
+- Printable A4 report
+
+## Limits
+
+- English, text-based PDFs; scanned PDFs need OCR first
+- Rules are keyword/regex based; findings are decision support, not a decision
+
+## Author
+
+- Anusara14: https://github.com/Anusara14

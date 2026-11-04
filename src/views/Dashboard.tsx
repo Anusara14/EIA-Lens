@@ -149,7 +149,7 @@ export function Dashboard() {
           {warnings.map((w) => <p key={w}>{w}</p>)}
         </div>
       )}
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
         <Card icon={FileText} title="Review quality" aside={<OutlinePill>Indicative · reviewer confirms</OutlinePill>}>
           <RatingPill rating={ratings.review} />
           <ReviewTiers grades={grades} />
@@ -179,7 +179,7 @@ export function Dashboard() {
         </Card>
       </div>
 
-      <section aria-label="Decision" className="card flex flex-col gap-5 rounded-[var(--radius-card)] bg-card p-6">
+      <section aria-label="Decision" className="card flex min-w-0 flex-col gap-5 rounded-[var(--radius-card)] bg-card p-5 sm:p-6">
         <div className="flex flex-wrap items-center gap-x-6 gap-y-4">
           <h2 className="flex items-center gap-2.5 text-[15px]">
             <Scale className="size-[18px] text-ink-2" strokeWidth={1.6} aria-hidden /> Recommended decision

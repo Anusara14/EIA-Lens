@@ -2,6 +2,7 @@ import { useRef, useState, type DragEvent } from 'react'
 import { Check, FileUp, Loader2, Ship } from 'lucide-react'
 import { STEPS, useStore } from '../store'
 import { Logo } from '../ui/kit'
+import { FAQ, RULES, STEPS_HOW, WHAT_IS } from '../content/about'
 
 function Progress() {
   const { step, pageProgress } = useStore()
@@ -52,6 +53,7 @@ export function Upload() {
       <div className="grid gap-10 lg:grid-cols-[1.1fr_1fr] lg:items-end">
         <div>
           <h1 className="text-[clamp(44px,7vw,84px)] leading-[0.98] font-light tracking-[-0.035em] text-balance">
+            <span className="mb-4 block text-[15px] leading-snug font-medium tracking-normal text-link">Environmental Impact Assessment (EIA) review tool</span>
             Review. Verify. <span className="text-mint-500">Track.</span>
           </h1>
           <p className="mt-6 max-w-[54ch] text-[17px] leading-relaxed text-ink-2">
@@ -104,6 +106,49 @@ export function Upload() {
           )}
         </div>
       </div>
+
+      {!busy && <About />}
     </main>
+  )
+}
+
+/** Plain, crawlable explanation of the tool. Same copy as the static HTML in index.html (see vite.config.ts). */
+function About() {
+  return (
+    <section aria-labelledby="about-h" className="flex flex-col gap-10 border-t border-line pt-10">
+      <div className="grid gap-6 lg:grid-cols-[1fr_1.4fr]">
+        <h2 id="about-h" className="text-[28px] font-light tracking-[-0.02em]">What is EIA Lens?</h2>
+        <p className="max-w-[68ch] text-[16px] leading-relaxed text-ink-2">{WHAT_IS}</p>
+      </div>
+      <div className="grid gap-4 md:grid-cols-3">
+        {STEPS_HOW.map((s) => (
+          <div key={s.title} className="rounded-[var(--radius-card)] bg-card p-6">
+            <h3 className="text-[19px] text-ink">{s.title}</h3>
+            <p className="mt-2 text-[15px] leading-relaxed text-ink-2">{s.text}</p>
+          </div>
+        ))}
+      </div>
+      <div className="grid gap-6 lg:grid-cols-[1fr_1.4fr]">
+        <h2 className="text-[28px] font-light tracking-[-0.02em]">The ten audit rules</h2>
+        <ol className="grid gap-2 sm:grid-cols-2">
+          {RULES.map(([id, t]) => (
+            <li key={id} className="flex gap-3 rounded-2xl bg-card px-4 py-3 text-[15px]">
+              <span className="num w-8 shrink-0 text-ink-2">{id}</span>{t}
+            </li>
+          ))}
+        </ol>
+      </div>
+      <div className="grid gap-6 lg:grid-cols-[1fr_1.4fr]">
+        <h2 className="text-[28px] font-light tracking-[-0.02em]">Frequently asked questions</h2>
+        <dl className="flex flex-col gap-5">
+          {FAQ.map((f) => (
+            <div key={f.q}>
+              <dt className="text-[17px] text-ink">{f.q}</dt>
+              <dd className="mt-1.5 text-[15px] leading-relaxed text-ink-2">{f.a}</dd>
+            </div>
+          ))}
+        </dl>
+      </div>
+    </section>
   )
 }

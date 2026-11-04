@@ -19,7 +19,7 @@ export function Settings() {
   const { theme, toggleTheme, ai, setAi, isDemo, pages } = useStore()
   const keyOk = ai.key.startsWith('sk-ant-')
   return (
-    <div className="grid gap-4 xl:grid-cols-2 [&>*]:min-w-0">
+    <div className="grid grid-cols-1 gap-4 xl:grid-cols-2 [&>*]:min-w-0">
       <div className="flex flex-col gap-4">
         <Card icon={theme === 'dark' ? Moon : Sun} title="Appearance">
           <button type="button" onClick={toggleTheme} className="w-fit rounded-full border border-line-strong px-4 py-2 text-[14px] hover:border-mint-500">

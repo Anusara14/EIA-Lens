@@ -189,7 +189,7 @@ export function Verify() {
   )
 
   return (
-    <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_380px] [&>*]:min-w-0">
+    <div className="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1fr)_380px] [&>*]:min-w-0">
       <section aria-label="Verify map" className="relative h-[72vh] min-h-[480px] overflow-hidden rounded-[var(--radius-card)] bg-card">
         <Map key={demo ? 'demo' : `report-${analysis.analysedAt}`} center={demo ? [79.83, 6.99] : (loc!.center ?? [80.7, 7.8])} zoom={demo ? 11.2 : loc!.center ? 11 : 7} pitch={62} bearing={-25} maxPitch={75}>
           <Camera is3d={is3d} />

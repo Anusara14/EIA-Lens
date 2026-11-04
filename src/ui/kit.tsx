@@ -40,8 +40,8 @@ interface CardProps {
 
 export function Card({ icon: Icon, title, children, className = '', aside }: CardProps) {
   return (
-    <section aria-label={title} className={`card flex flex-col gap-5 rounded-[var(--radius-card)] bg-card p-6 ${className}`}>
-      <header className="flex items-center justify-between gap-3">
+    <section aria-label={title} className={`card flex min-w-0 flex-col gap-5 rounded-[var(--radius-card)] bg-card p-5 sm:p-6 ${className}`}>
+      <header className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
         <h2 className="flex items-center gap-2.5 whitespace-nowrap text-[15px] font-normal text-ink">
           <Icon className="size-[18px] text-ink-2" strokeWidth={1.6} aria-hidden />
           {title}
@@ -93,7 +93,7 @@ export function EvidencePill({ ev, prefix = 'Based on' }: { ev?: Evidence; prefi
 
 export function OutlinePill({ children, icon: Icon = Info }: { children: ReactNode; icon?: LucideIcon }) {
   return (
-    <span className="inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full border border-line-strong px-3 py-1 text-[12.5px] text-ink-2">
+    <span className="inline-flex max-w-full items-center gap-1.5 rounded-full border border-line-strong px-3 py-1 text-[12.5px] text-ink-2">
       <Icon className="size-3.5" strokeWidth={1.6} aria-hidden />
       {children}
     </span>

@@ -1,13 +1,14 @@
-import { useEffect, useState, type ReactNode } from 'react'
+import { lazy, Suspense, useEffect, useState, type ReactNode } from 'react'
 import { Download, FileSearch, LayoutGrid, ListChecks, Map, Moon, RefreshCw, Settings as SettingsIcon, Sun, Upload as UploadIcon, type LucideIcon } from 'lucide-react'
 import { useStore, type View } from './store'
 import { DeveloperLink, Logo } from './ui/kit'
 import { Upload } from './views/Upload'
-import { Dashboard } from './views/Dashboard'
-import { Review } from './views/Review'
-import { Track } from './views/Track'
-import { Verify } from './views/Verify'
-import { Settings } from './views/Settings'
+// Views load on demand so the landing page does not pull in maplibre, recharts or pdf.js.
+const Dashboard = lazy(() => import('./views/Dashboard').then((m) => ({ default: m.Dashboard })))
+const Review = lazy(() => import('./views/Review').then((m) => ({ default: m.Review })))
+const Track = lazy(() => import('./views/Track').then((m) => ({ default: m.Track })))
+const Verify = lazy(() => import('./views/Verify').then((m) => ({ default: m.Verify })))
+const Settings = lazy(() => import('./views/Settings').then((m) => ({ default: m.Settings })))
 import { PrintReport } from './views/PrintReport'
 
 const NAV: { view: View; label: string; Icon: LucideIcon }[] = [
@@ -117,7 +118,7 @@ export default function App() {
 
   return (
     <>
-      <div className="flex min-h-screen gap-4 p-3 pb-24 sm:p-4 md:pb-4 print:hidden">
+      <div className="flex min-h-screen gap-4 p-3 pb-[calc(6rem+env(safe-area-inset-bottom))] sm:p-4 md:pb-4 print:hidden">
         <nav aria-label="Main" className="sticky top-4 hidden h-[calc(100vh-2rem)] w-[72px] shrink-0 flex-col items-center gap-2 rounded-[24px] bg-rail py-3 md:flex">
           <div className="mb-3 grid size-12 place-items-center rounded-2xl bg-mint-500 text-on-mint">
             <Logo className="size-7" />
@@ -129,11 +130,11 @@ export default function App() {
 
         <div className="flex min-w-0 flex-1 flex-col gap-4">
           <TopBar />
-          <main className="flex-1">{VIEWS[view]?.()}</main>
+          <main className="flex-1"><Suspense fallback={null}>{VIEWS[view]?.()}</Suspense></main>
           <Footer className="px-2 pb-2" />
         </div>
 
-        <nav aria-label="Main" className="fixed inset-x-3 bottom-3 z-20 flex overflow-hidden rounded-[24px] bg-rail md:hidden">
+        <nav aria-label="Main" className="fixed inset-x-3 bottom-[max(0.75rem,env(safe-area-inset-bottom))] z-20 flex overflow-hidden rounded-[24px] bg-rail md:hidden">
           {[...NAV, SETTINGS].map((n) => <NavButton key={n.view} {...n} mobile />)}
         </nav>
       </div>

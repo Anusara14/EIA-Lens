@@ -1,8 +1,9 @@
 import { create } from 'zustand'
 import type { Analysis, Page } from './engine'
-import { analyse } from './engine'
-import { extractPages } from './pdf/extract'
-import { openPdf, type PDFDocumentProxy } from './pdf/load'
+import type { PDFDocumentProxy } from './pdf/load'
+
+// pdf.js (~1 MB) loads on first use, not with the landing page.
+const pdfLib = () => Promise.all([import('./pdf/load'), import('./pdf/extract')]).then(([l, e]) => ({ openPdf: l.openPdf, extractPages: e.extractPages }))
 
 export type View = 'upload' | 'dashboard' | 'review' | 'verify' | 'track' | 'settings'
 export type Theme = 'dark' | 'light'
@@ -76,6 +77,7 @@ export const useStore = create<State>((set, get) => {
   async function run(data: ArrayBuffer, docName: string, isDemo: boolean) {
     set({ step: 0, pageProgress: 0, error: null, docName, isDemo })
     try {
+      const { openPdf, extractPages } = await pdfLib()
       const pdf = await openPdf(data)
       const pages = await extractPages(pdf, (done, total) => set({ pageProgress: done / total }))
       // The engine is synchronous and fast; step through the labels so the user sees what ran.
@@ -83,6 +85,7 @@ export const useStore = create<State>((set, get) => {
         set({ step: s })
         await tick()
       }
+      const { analyse } = await import('./engine') // with its 350 KB gazetteer, off the landing page
       const analysis = analyse(pages)
       save(SAVE_KEY, { docName, isDemo, analysis })
       set({ pdf, pages, analysis, step: -1, view: 'dashboard' })
@@ -119,6 +122,7 @@ export const useStore = create<State>((set, get) => {
       try {
         const res = await fetch(DEMO_URL)
         if (!res.ok) throw new Error(`demo file missing (${res.status})`)
+        const { openPdf, extractPages } = await pdfLib()
         const doc = await openPdf(await res.arrayBuffer())
         set({ pdf: doc, pages: await extractPages(doc), docLoading: false })
       } catch (e: unknown) {
@@ -158,6 +162,7 @@ export const useStore = create<State>((set, get) => {
     rerun: async () => {
       const { pages, docName, isDemo } = get()
       if (!pages) return isDemo ? get().runDemo() : set({ view: 'upload' })
+      const { analyse } = await import('./engine')
       const analysis = analyse(pages)
       save(SAVE_KEY, { docName, isDemo, analysis })
       set({ analysis })

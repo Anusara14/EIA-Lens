@@ -186,3 +186,27 @@ body {
     display: none !important;
   }
 }
+
+/* Crawler-readable landing copy injected into #root by vite.config.ts; React replaces it on mount. */
+.seo-static {
+  max-width: 72ch;
+  margin: 0 auto;
+  padding: 40px 16px;
+  line-height: 1.6;
+  color: var(--text-2);
+}
+.seo-static h1,
+.seo-static h2,
+.seo-static h3 {
+  color: var(--text);
+  margin: 1.2em 0 0.4em;
+}
+
+/* iOS Safari zooms the page when a focused field's text is under 16px. */
+@media (max-width: 767px) {
+  input,
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+}

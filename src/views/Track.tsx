@@ -47,7 +47,7 @@ function Ledger({ items }: { items: EmpItem[] }) {
           Sort: {sortBy === 'order' ? 'EMP order' : 'weakest first'}
         </button>
       </div>
-      <div className="max-h-[560px] overflow-auto rounded-[20px] border border-line">
+      <div className="relative max-h-[560px] overflow-auto rounded-[20px] border border-line">
         <table className="w-full min-w-[960px] border-collapse text-left text-[13.5px]">
           <caption className="sr-only">EMP commitments with SMART checks and tracking status</caption>
           <thead className="sticky top-0 z-10 bg-card-2 text-[12px] text-ink-2">
@@ -165,7 +165,7 @@ export function Track() {
   const analysis = useStore((s) => s.analysis)
   if (!analysis) return null
   return (
-    <div className="grid gap-4 xl:grid-cols-2 [&>*]:min-w-0">
+    <div className="grid grid-cols-1 gap-4 xl:grid-cols-2 [&>*]:min-w-0">
       <TssChart />
       <StopWork />
       {analysis.emp.length ? <Ledger items={analysis.emp} /> : (
